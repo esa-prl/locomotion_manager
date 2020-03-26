@@ -7,19 +7,40 @@ from statemachine import StateMachine, State
 class LocomotionModeMachine(StateMachine):
 
     def __init__(self):
-        self.Modes = self.getModes()
+        # self.Modes = self.getModes()
+        self.States = set()
+        self.Transitions = set()
 
-    def getModes(self):
-        modes = set()
+    # def getModes(self):
+        # modes = set()
 
-        simple_rover_locomotion_mode = State(
-            'SimpleRoverLocomotion', initial=True)
-        crabbing_mode = State('Crabbing')
+        # simple_rover_locomotion_mode = State(
+        #     'SimpleRoverLocomotion', initial=True)
+        # crabbing_mode = State('Crabbing')
 
-        modes.add(simple_rover_locomotion_mode)
-        modes.add(crabbing_mode)
+        # modes.add(simple_rover_locomotion_mode)
+        # modes.add(crabbing_mode)
 
-        return modes
+        # return modes
+
+    def setModes(self, locomotion_modes):
+        for mode in locomotion_modes:
+            self.States.add(State(mode))
+
+    '''
+    Creates a state for each locomotion mode and the transitions between all states
+    '''
+
+    def setup(self, locomotion_modes):
+        for mode in locomotion_modes:
+            self.States.add(State(mode))
+
+        for state_from in self.States:
+            for state_to in self.States:
+                if state_from != state_to:
+                    self.Transitions.add(state_from.to(state_to))
+
+        print(self.Transitions)
 
 
 class LocomotionManager(Node):
@@ -29,8 +50,15 @@ class LocomotionManager(Node):
 
         self.StateMachine = LocomotionModeMachine()
 
-    def getModes(self):
-        return self.StateMachine.Modes
+        self.declare_parameter('locomotion_modes')
+        # print(self.get_parameter('locomotion_modes')._value)
+
+        # self.StateMachine.setModes(
+        #     self.get_parameter('locomotion_modes')._value)
+        self.StateMachine.setup(self.get_parameter('locomotion_modes')._value)
+
+    def getStates(self):
+        return self.StateMachine.States
 
 
 def main(args=None):
@@ -38,10 +66,10 @@ def main(args=None):
 
     locomotion_manager = LocomotionManager()
 
-    modes = locomotion_manager.getModes()
+    states = locomotion_manager.getStates()
 
-    for mode in modes:
-        locomotion_manager.get_logger().info(mode.name)
+    for state in states:
+        locomotion_manager.get_logger().info(state.name)
 
     rclpy.spin(locomotion_manager)
 
