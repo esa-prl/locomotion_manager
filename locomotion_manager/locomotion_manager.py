@@ -10,7 +10,7 @@ from std_srvs.srv import Trigger
 class StateMachine():
 
     def __init__(self, node):
-        self.states = list()
+        self.states = set()
         self.active_state = None
         self.node = node
 
@@ -47,12 +47,28 @@ class StateMachine():
         return state
 
     def change_state(self, new_locomotion_mode):
+        # Check whether new mode exists
+        for state in self.states:
+            if state.name == new_locomotion_mode:
+                if self.active_state == None:
+                    # Enable new mode
+                    self.active_state = state
+                    print('Set {} as first active mode'.format(state.name))
+                elif state.name is not self.active_state.name:
+                    # Disable active mode
 
-        if (self.active_state is None) or (new_locomotion_mode is not self.active_state.name):
-            print('Changed state to {}'.format(new_locomotion_mode))
+                    # Enable new mode
+                    print('Change from {} to {}'.format(
+                        self.active_state.name, state.name))
+                    # state.enable()
+                    self.active_state = state
+                else:
+                    print('Requested state is already active')
+                    # If the requested mode is already active do nothing
 
+                break
         else:
-            print('No state for the requested locomotion mode')
+            self.node.get_logger().error('The requested locomotion mode is not defined')
             return
 
     class State():
@@ -62,6 +78,9 @@ class StateMachine():
             self.enable_service = enable_service
             self.disable_service = disable_service
 
+        def enable(self):
+            request = Trigger.Request()
+            self.enable_service.call_async(request)
         # def change_state(self):
         #     self.enable_service.call_async()
 
