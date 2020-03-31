@@ -1,64 +1,105 @@
 import rclpy
 from rclpy.node import Node
+from rover_msgs.srv import ChangeLocomotionMode
+from rover_msgs.srv import Enable
+from rover_msgs.msg import JointCommand
 
-from statemachine import StateMachine, State
+from std_srvs.srv import Trigger
 
 
-class LocomotionModeMachine(StateMachine):
+class StateMachine():
 
-    def __init__(self):
-        # self.Modes = self.getModes()
-        self.States = set()
-        self.Transitions = set()
-
-    # def getModes(self):
-        # modes = set()
-
-        # simple_rover_locomotion_mode = State(
-        #     'SimpleRoverLocomotion', initial=True)
-        # crabbing_mode = State('Crabbing')
-
-        # modes.add(simple_rover_locomotion_mode)
-        # modes.add(crabbing_mode)
-
-        # return modes
-
-    def setModes(self, locomotion_modes):
-        for mode in locomotion_modes:
-            self.States.add(State(mode))
+    def __init__(self, node):
+        self.states = list()
+        self.active_state = None
+        self.node = node
 
     '''
     Creates a state for each locomotion mode and the transitions between all states
+    @param locomotion_modes: List of locomotion modes as strings
     '''
 
     def setup(self, locomotion_modes):
+        # Create safe state and set it as active state
+        # safe_state = self.State('safe_mode')
+        # self.states.add(safe_state)
+        # self.active_state = safe_state
+
+        # Create a state for every locomotion mode
         for mode in locomotion_modes:
-            self.States.add(State(mode))
+            state = self.create_state(mode)
 
-        for state_from in self.States:
-            for state_to in self.States:
-                if state_from != state_to:
-                    self.Transitions.add(state_from.to(state_to))
+    def get_states(self):
+        return self.states
 
-        print(self.Transitions)
+    def create_state(self, name):
+        # Create the enable and disable service for state
+        enable_service_name = '/{}/enable'.format(name)
+        enable_service = self.node.create_client(Trigger, enable_service_name)
+        disable_service_name = '/{}/disable'.format(name)
+        disable_service = self.node.create_client(
+            Trigger, disable_service_name)
+
+        state = self.State(name, enable_service, disable_service)
+
+        self.states.add(state)
+
+        return state
+
+    def change_state(self, new_locomotion_mode):
+
+        if (self.active_state is None) or (new_locomotion_mode is not self.active_state.name):
+            print('Changed state to {}'.format(new_locomotion_mode))
+
+        else:
+            print('No state for the requested locomotion mode')
+            return
+
+    class State():
+        def __init__(self, name, enable_service, disable_service):
+            self.name = name
+
+            self.enable_service = enable_service
+            self.disable_service = disable_service
+
+        # def change_state(self):
+        #     self.enable_service.call_async()
 
 
 class LocomotionManager(Node):
+
     def __init__(self):
+        # Init node
         self.node_name = 'locomotion_manager_node'
         super().__init__(self.node_name)
 
-        self.StateMachine = LocomotionModeMachine()
-
+        # Declare parameters
         self.declare_parameter('locomotion_modes')
-        # print(self.get_parameter('locomotion_modes')._value)
 
-        # self.StateMachine.setModes(
-        #     self.get_parameter('locomotion_modes')._value)
-        self.StateMachine.setup(self.get_parameter('locomotion_modes')._value)
+        # Setup state machine
+        self.state_machine = StateMachine(self)
+        self.state_machine.setup(self.get_parameter('locomotion_modes')._value)
+
+        # Here I should create the services for the states
+
+        # Setup service
+        self.change_mode_server = self.create_service(
+            ChangeLocomotionMode, 'change_locomotion_mode', self.change_locomotion_mode_service_callback)
+
+        self.get_logger().info('\t{} STARTED.'.format(self.node_name.upper()))
 
     def getStates(self):
-        return self.StateMachine.States
+        return self.state_machine.states
+
+    def change_locomotion_mode_service_callback(self, request, response):
+        self.get_logger().info('Locomotion mode change request: %s' %
+                               request.new_locomotion_mode)
+
+        # TODO: Check whether state exists return warning if not
+        self.state_machine.change_state(request.new_locomotion_mode)
+
+        response.success = True
+        return response
 
 
 def main(args=None):
