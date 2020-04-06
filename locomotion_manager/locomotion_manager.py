@@ -51,15 +51,16 @@ class StateMachine():
             if state.name == new_locomotion_mode:
                 if self.active_state == None:
                     # Enable new mode
+                    state.enable()
                     self.active_state = state
                     print('Set {} as first active mode'.format(state.name))
                 elif state.name is not self.active_state.name:
                     # Disable active mode
-
+                    active_state.disable()
                     # Enable new mode
                     print('Change from {} to {}'.format(
                         self.active_state.name, state.name))
-                    # state.enable()
+                    state.enable()
                     self.active_state = state
                 else:
                     print('Requested state is already active')
@@ -80,8 +81,10 @@ class StateMachine():
         def enable(self):
             request = Trigger.Request()
             self.enable_service.call_async(request)
-        # def change_state(self):
-        #     self.enable_service.call_async()
+
+        def disable(self):
+            request = Trigger.Request()
+            self.disable_service.call_async(request)
 
 
 class LocomotionManager(Node):
@@ -117,6 +120,7 @@ class LocomotionManager(Node):
         self.state_machine.change_state(request.new_locomotion_mode)
 
         response.success = True
+        response.message = ''
         return response
 
 
