@@ -1,7 +1,6 @@
 import rclpy
 from rclpy.node import Node
 from rover_msgs.srv import ChangeLocomotionMode
-from rover_msgs.srv import Enable
 from rover_msgs.msg import JointCommand
 
 from std_srvs.srv import Trigger
