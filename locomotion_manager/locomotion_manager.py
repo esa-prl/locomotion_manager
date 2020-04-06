@@ -13,6 +13,12 @@ class StateMachine():
         self.active_state = None
         self.node = node
 
+        self.namespace = self.node.get_namespace()
+        # Blank out namespace if there is None.
+        # Otherwise the service names contain a double backslash //.
+        if self.namespace == "/":
+            self.namespace = ""
+
     '''
     Creates a state for each locomotion mode and the transitions between all states
     @param locomotion_modes: List of locomotion modes as strings
@@ -32,12 +38,14 @@ class StateMachine():
         return self.states
 
     def create_state(self, name):
+
+
         # Create the enable and disable service for state
-        enable_service_name = '/{}/enable'.format(name)
+        enable_service_name = '{}/{}/enable'.format(self.namespace, name)
         enable_service = self.node.create_client(Trigger, enable_service_name)
-        disable_service_name = '/{}/disable'.format(name)
-        disable_service = self.node.create_client(
-            Trigger, disable_service_name)
+        
+        disable_service_name = '{}/{}/disable'.format(self.namespace, name)
+        disable_service = self.node.create_client(Trigger, disable_service_name)
 
         state = self.State(name, enable_service, disable_service)
 
@@ -56,7 +64,7 @@ class StateMachine():
                     print('Set {} as first active mode'.format(state.name))
                 elif state.name is not self.active_state.name:
                     # Disable active mode
-                    active_state.disable()
+                    self.active_state.disable()
                     # Enable new mode
                     print('Change from {} to {}'.format(
                         self.active_state.name, state.name))
