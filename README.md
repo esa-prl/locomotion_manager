@@ -52,14 +52,6 @@ Config file config/
 
 This node contains all the logic.
 
-#### Subscribed Topics
-
-...
-
-#### Published Topics
-
-...
-
 #### Service Servers
 
 * **`change_locomotion_mode`** ([rover_msgs/ChangeLocomotionMode])
