@@ -61,17 +61,17 @@ class StateMachine():
                     # Enable new mode
                     state.enable()
                     self.active_state = state
-                    print('Set {} as first active mode'.format(state.name))
+                    self.node.get_logger().info('Set {} as first active mode'.format(state.name))
                 elif state.name is not self.active_state.name:
                     # Disable active mode
                     self.active_state.disable()
                     # Enable new mode
-                    print('Change from {} to {}'.format(
+                    self.node.get_logger().info('Change from {} to {}'.format(
                         self.active_state.name, state.name))
                     state.enable()
                     self.active_state = state
                 else:
-                    print('Requested state is already active')
+                    self.node.get_logger().info('Requested state is already active')
                     # If the requested mode is already active do nothing
 
                 break
@@ -121,7 +121,7 @@ class LocomotionManager(Node):
         return self.state_machine.states
 
     def change_locomotion_mode_service_callback(self, request, response):
-        self.get_logger().info('Locomotion mode change request: %s' %
+        self.get_logger().debug('Locomotion mode change request: %s' %
                                request.new_locomotion_mode)
 
         # TODO: Check whether state exists return warning if not
