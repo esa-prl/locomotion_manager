@@ -11,11 +11,12 @@ ros2_ws_src = get_ws_src_directory('locomotion_manager')
 
 def generate_launch_description():
     # Individual Parameter files
-    locomotion_manager_config = os.path.join(ros2_ws_src, 'locomotion_manager', 'config', 'locomotion_manager.yaml')
+    locomotion_manager_config = os.path.join(
+        ros2_ws_src, 'locomotion_manager', 'config', 'locomotion_manager.yaml')
     # Add namespace to the yaml file
-    locomotion_manager_config_ns=add_namespace_to_yaml(
+    locomotion_manager_config_ns = add_namespace_to_yaml(
         namespace_, locomotion_manager_config)
-    
+
     return LaunchDescription([
         Node(
             package='locomotion_manager',
