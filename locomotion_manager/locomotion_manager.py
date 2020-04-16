@@ -20,9 +20,9 @@ class StateMachine():
             self.namespace = ""
 
     def setup(self, locomotion_modes):
-        """" Creates a state for each locomotion mode and the transitions between all states
+        """ Creates a state for each locomotion mode and the transitions between all states
         @param locomotion_modes: List of locomotion modes as strings
-        """"
+        """
         for mode in locomotion_modes:
             state = self.create_state(mode)
 
@@ -39,8 +39,7 @@ class StateMachine():
         enable_service = self.node.create_client(Trigger, enable_service_name)
 
         disable_service_name = '{}/{}/disable'.format(self.namespace, name)
-        disable_service = self.node.create_client(
-            Trigger, disable_service_name)
+        disable_service = self.node.create_client(Trigger, disable_service_name)
 
         state = self.State(name, enable_service, disable_service)
 
@@ -63,8 +62,7 @@ class StateMachine():
                     # Disable active mode
                     self.active_state.disable()
                     # Enable new mode
-                    self.node.get_logger().info('Change from {} to {}'.format(
-                        self.active_state.name, state.name))
+                    self.node.get_logger().info('Change from {} to {}'.format(self.active_state.name, state.name))
                     state.enable()
                     self.active_state = state
                 else:
