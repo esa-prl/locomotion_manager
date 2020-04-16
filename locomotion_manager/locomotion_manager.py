@@ -19,33 +19,28 @@ class StateMachine():
         if self.namespace == "/":
             self.namespace = ""
 
-    '''
-    Creates a state for each locomotion mode and the transitions between all states
-    @param locomotion_modes: List of locomotion modes as strings
-    '''
-
     def setup(self, locomotion_modes):
-        # Create safe state and set it as active state
-        # safe_state = self.State('safe_mode')
-        # self.states.add(safe_state)
-        # self.active_state = safe_state
-
-        # Create a state for every locomotion mode
+        """" Creates a state for each locomotion mode and the transitions between all states
+        @param locomotion_modes: List of locomotion modes as strings
+        """"
         for mode in locomotion_modes:
             state = self.create_state(mode)
 
     def get_states(self):
+        """ Return all states """
         return self.states
 
     def create_state(self, name):
+        """ Create a new state
+        @param name: Name of the state to be created
+        """
 
-
-        # Create the enable and disable service for state
         enable_service_name = '{}/{}/enable'.format(self.namespace, name)
         enable_service = self.node.create_client(Trigger, enable_service_name)
-        
+
         disable_service_name = '{}/{}/disable'.format(self.namespace, name)
-        disable_service = self.node.create_client(Trigger, disable_service_name)
+        disable_service = self.node.create_client(
+            Trigger, disable_service_name)
 
         state = self.State(name, enable_service, disable_service)
 
@@ -53,11 +48,13 @@ class StateMachine():
 
         return state
 
-    def change_state(self, new_locomotion_mode):
-        # Check whether new mode exists
+    def change_state(self, new_state):
+        """ Change to another state
+        @param name: Name of the state to be created
+        """
         for state in self.states:
-            if state.name == new_locomotion_mode:
-                if self.active_state == None:
+            if state.name == new_state:
+                if self.active_state is None:
                     # Enable new mode
                     state.enable()
                     self.active_state = state
@@ -122,7 +119,7 @@ class LocomotionManager(Node):
 
     def change_locomotion_mode_service_callback(self, request, response):
         self.get_logger().debug('Locomotion mode change request: %s' %
-                               request.new_locomotion_mode)
+                                request.new_locomotion_mode)
 
         # TODO: Check whether state exists return warning if not
         self.state_machine.change_state(request.new_locomotion_mode)
