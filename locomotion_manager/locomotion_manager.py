@@ -38,11 +38,14 @@ class StateMachine():
 
         enable_service_name = '{}/{}/enable'.format(self.namespace, name)
         enable_service = self.node.create_client(Trigger, enable_service_name, callback_group=self.node.cb_group)
+
+        # Wait for service to become available
         if not enable_service.wait_for_service(timeout_sec=1.0):
             self.node.get_logger().warn('Could not find enable service for mode {}'.format(name))
 
         disable_service_name = '{}/{}/disable'.format(self.namespace, name)
         disable_service = self.node.create_client(Trigger, disable_service_name, callback_group=self.node.cb_group)
+        # Wait for service to become available
         if not enable_service.wait_for_service(timeout_sec=1.0):
             self.node.get_logger().warn('Could not find disable service for mode {}'.format(name))
 
@@ -53,6 +56,9 @@ class StateMachine():
         return state
 
     async def change_state(self, new_state):
+        """ Change to a new state
+        @param new_state: Name of the state to changed to
+        """
         for state in self.states:
             if state.name == new_state:
                 if self.active_state is None:
@@ -146,20 +152,22 @@ class LocomotionManager(Node):
         # Declare parameters
         self.declare_parameter('locomotion_modes')
 
+        # Callback group that allows service callbacks
+        # to be executed in parallel
         self.cb_group = ReentrantCallbackGroup()
 
         # Setup state machine
         self.state_machine = StateMachine(self)
         self.state_machine.setup(self.get_parameter('locomotion_modes')._value)
 
-        # Setup service
+        # Setup service to receive change_ocomotion_mode requests
         self.change_mode_server = self.create_service(
             ChangeLocomotionMode, 'change_locomotion_mode', self.change_locomotion_mode_service_callback)
 
         self.get_logger().info('\t{} STARTED.'.format(self.node_name.upper()))
 
     def getStates(self):
-        return self.state_machine.states
+        return self.state_machine.get_states()
 
     async def change_locomotion_mode_service_callback(self, request, response):
         self.get_logger().debug('Locomotion mode change request: %s' %
@@ -179,8 +187,6 @@ def main(args=None):
     rclpy.init(args=args)
 
     locomotion_manager = LocomotionManager()
-
-    states = locomotion_manager.getStates()
 
     # Has to use this instead of rclpy.spin(node)
     # Otherwise a second service call gets stuck
