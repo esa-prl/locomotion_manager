@@ -1,7 +1,6 @@
 import rclpy
 from rclpy.node import Node
 from rover_msgs.srv import ChangeLocomotionMode
-from rover_msgs.msg import JointCommand
 
 from std_srvs.srv import Trigger
 from rclpy.callback_groups import ReentrantCallbackGroup
@@ -25,7 +24,7 @@ class StateMachine():
         @param locomotion_modes: List of locomotion modes as strings
         """
         for mode in locomotion_modes:
-            state = self.create_state(mode)
+            self.create_state(mode)
 
     def get_states(self):
         """ Return all states """
@@ -37,14 +36,16 @@ class StateMachine():
         """
 
         enable_service_name = '{}/{}/enable'.format(self.namespace, name)
-        enable_service = self.node.create_client(Trigger, enable_service_name, callback_group=self.node.cb_group)
+        enable_service = self.node.create_client(
+            Trigger, enable_service_name, callback_group=self.node.cb_group)
 
         # Wait for service to become available
         if not enable_service.wait_for_service(timeout_sec=1.0):
             self.node.get_logger().warn('Could not find enable service for mode {}'.format(name))
 
         disable_service_name = '{}/{}/disable'.format(self.namespace, name)
-        disable_service = self.node.create_client(Trigger, disable_service_name, callback_group=self.node.cb_group)
+        disable_service = self.node.create_client(
+            Trigger, disable_service_name, callback_group=self.node.cb_group)
         # Wait for service to become available
         if not enable_service.wait_for_service(timeout_sec=1.0):
             self.node.get_logger().warn('Could not find disable service for mode {}'.format(name))
@@ -69,12 +70,14 @@ class StateMachine():
                     try:
                         result = future.result()
                     except Exception as e:
-                        self.node.get_logger().error('Enable locomotion mode service call failed %r' % (e,))
+                        self.node.get_logger().error(
+                            'Enable locomotion mode service call failed %r' % (e,))
                         return False
                     else:
                         if result.success:
                             self.active_state = state
-                            self.node.get_logger().info('Set {} as first active mode'.format(state.name))
+                            self.node.get_logger().info(
+                                'Set {} as first active mode'.format(state.name))
                             return True
                         else:
                             self.node.get_logger().warn('Could not enable {}'.format(state.name))
@@ -87,7 +90,8 @@ class StateMachine():
                     try:
                         result = future_disable.result()
                     except Exception as e:
-                        self.node.get_logger().error('Disable locomotion mode service call failed %r' % (e,))
+                        self.node.get_logger().error(
+                            'Disable locomotion mode service call failed %r' % (e,))
                         return False
                     else:
                         if result.success:
@@ -104,12 +108,14 @@ class StateMachine():
                     try:
                         result = future_enable.result()
                     except Exception as e:
-                        self.node.get_logger().error('Enable locomotion mode service call failed %r' % (e,))
+                        self.node.get_logger().error(
+                            'Enable locomotion mode service call failed %r' % (e,))
                         return False
                     else:
                         if result.success:
                             self.active_state = state
-                            self.node.get_logger().info('Change from {} to {}'.format(self.active_state.name, state.name))
+                            self.node.get_logger().info(
+                                'Change from {} to {}'.format(self.active_state.name, state.name))
                             return True
                         else:
                             self.node.get_logger().warn('Could not enable {}'.format(state.name))
@@ -123,7 +129,8 @@ class StateMachine():
                 pass
 
         # If the new_state was not found in the available states
-        self.node.get_logger().error('The requested locomotion mode: {} is not defined'.format(new_state))
+        self.node.get_logger().error(
+            'The requested locomotion mode: {} is not defined'.format(new_state))
         return False
 
     class State():
@@ -162,7 +169,9 @@ class LocomotionManager(Node):
 
         # Setup service to receive change_ocomotion_mode requests
         self.change_mode_server = self.create_service(
-            ChangeLocomotionMode, 'change_locomotion_mode', self.change_locomotion_mode_service_callback)
+            ChangeLocomotionMode,
+            'change_locomotion_mode',
+            self.change_locomotion_mode_service_callback)
 
         self.get_logger().info('\t{} STARTED.'.format(self.node_name.upper()))
 
@@ -190,12 +199,14 @@ def main(args=None):
 
     # Has to use this instead of rclpy.spin(node)
     # Otherwise a second service call gets stuck
-    while rclpy.ok():
-        rclpy.spin_once(locomotion_manager)
-
-    locomotion_manager.spin()
-
-    rclpy.shutdown()
+    try:
+        while rclpy.ok():
+            rclpy.spin_once(locomotion_manager)
+    except KeyboardInterrupt:
+        pass
+    finally:
+        locomotion_manager.destroy_node()
+        rclpy.shutdown()
 
 
 if __name__ == '__main__':
