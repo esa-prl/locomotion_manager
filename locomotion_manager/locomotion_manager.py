@@ -35,19 +35,22 @@ class StateMachine():
         @param name: Name of the state to be created
         """
 
+        # Create enable service
         enable_service_name = '{}/{}/enable'.format(self.namespace, name)
         enable_service = self.node.create_client(
             Trigger, enable_service_name, callback_group=self.node.cb_group)
 
-        # Wait for service to become available
+        # Wait for enable service to become available
         if not enable_service.wait_for_service(timeout_sec=1.0):
             self.node.get_logger().warn('Could not find enable service for mode {}'.format(name))
 
+        # Create disable service
         disable_service_name = '{}/{}/disable'.format(self.namespace, name)
         disable_service = self.node.create_client(
             Trigger, disable_service_name, callback_group=self.node.cb_group)
+
         # Wait for service to become available
-        if not enable_service.wait_for_service(timeout_sec=1.0):
+        if not disable_service.wait_for_service(timeout_sec=1.0):
             self.node.get_logger().warn('Could not find disable service for mode {}'.format(name))
 
         state = self.State(name, enable_service, disable_service)
