@@ -98,10 +98,10 @@ class StateMachine():
                         return False
                     else:
                         if result.success:
+                            self.node.get_logger().info('Disable {}'.format(self.active_state.name))
                             self.active_state = None
-                            self.node.get_logger().info('Disable {}'.format(state.name))
                         else:
-                            self.node.get_logger().info('Could not disable {}'.format(state.name))
+                            self.node.get_logger().info('Could not disable {}'.format(self.active_state.name))
                             return False
 
                     # Enable new mode
