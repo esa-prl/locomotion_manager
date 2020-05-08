@@ -42,7 +42,8 @@ class StateMachine():
 
         # Wait for enable service to become available
         if not enable_service.wait_for_service(timeout_sec=1.0):
-            self.node.get_logger().warn('Could not find enable service for mode {}'.format(name))
+            self.node.get_logger().error('Could not find enable service for mode {}'.format(name))
+            return
 
         # Create disable service
         disable_service_name = '{}/{}/disable'.format(self.namespace, name)
@@ -52,7 +53,8 @@ class StateMachine():
 
         # Wait for service to become available
         if not disable_service.wait_for_service(timeout_sec=1.0):
-            self.node.get_logger().warn('Could not find disable service for mode {}'.format(name))
+            self.node.get_logger().error('Could not find disable service for mode {}'.format(name))
+            return
 
         state = self.State(name, enable_service, disable_service)
 
