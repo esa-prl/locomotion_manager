@@ -1,0 +1,3 @@
+locomotion_manager_node:
+    ros__parameters:
+        locomotion_modes: ["stop_mode_node","undefined_mode"]
