@@ -194,11 +194,8 @@ class LocomotionManager(Node):
         future = self.state_machine.change_state(request.new_locomotion_mode)
         result, msg = await future
 
-        if result is True:
-            response.success = True
-        else:
-            response.success = False
-            response.message = msg  # "Can not change to the requested locomotion mode: " + request.new_locomotion_mode
+        response.success = result
+        response.message = msg
         return response
 
 
