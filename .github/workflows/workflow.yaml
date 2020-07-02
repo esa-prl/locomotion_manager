@@ -16,13 +16,14 @@ jobs:
       uses: ros-tooling/setup-ros@0.0.16
       with:
         required-ros-distributions: eloquent
-    - run: vcs --help
         
     - name: Run Tests
       uses: ros-tooling/action-ros-ci@0.0.13
       with:
         package-name: locomotion_manager 
-        vcs-repo-file-url: https://github.com/esa-prl/rover_repos/blob/master/marta_simulation.repos
+        vcs-repo-file-url: |
+          https://raw.githubusercontent.com/ros2/ros2/eloquent/ros2.repos
+          https://raw.githubusercontent.com/esa-prl/rover_repos/master/marta_simulation.repos
 
     - name: Upload Logs
       uses: actions/upload-artifact@v1
