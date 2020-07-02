@@ -1,4 +1,4 @@
-name: Test Example
+name: Build Test 
 
 on:
   pull_request:
@@ -11,7 +11,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-18.04, windows-latest, macos-latest]
+        os: [ubuntu-18.04]
       fail-fast: false
     steps:
     - name: Setup ROS 2
