@@ -11,6 +11,7 @@ jobs:
       matrix:
         os: [ubuntu-18.04]
       fail-fast: false
+    # container: osrf/ros:eloquent-desktop
     steps:
     - name: Setup ROS 2
       uses: ros-tooling/setup-ros@0.0.25
@@ -21,9 +22,7 @@ jobs:
       uses: ros-tooling/action-ros-ci@0.0.17
       with:
         package-name: locomotion_manager 
-        vcs-repo-file-url: |
-          https://raw.githubusercontent.com/ros2/ros2/eloquent/ros2.repos
-          https://raw.githubusercontent.com/esa-prl/rover_repos/master/marta_simulation.repos
+        vcs-repo-file-url: https://raw.githubusercontent.com/esa-prl/rover_repos/master/marta_simulation.repos
 
     - name: Upload Logs
       uses: actions/upload-artifact@v1
