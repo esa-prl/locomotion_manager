@@ -17,8 +17,7 @@ jobs:
       uses: ros-tooling/setup-ros@0.0.25
       with:
         required-ros-distributions: eloquent
-    - run: |
-      rosinstall_generator locomotion_manager --rosdistro eloquent --deps-only --deps --upstream-development > /tmp/deps.repos   
+    - run: rosinstall_generator locomotion_manager --rosdistro eloquent --deps-only --deps --upstream-development > /tmp/deps.repos   
 
     - name: Run Tests
       uses: ros-tooling/action-ros-ci@0.0.17
