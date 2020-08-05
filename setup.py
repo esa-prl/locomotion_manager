@@ -21,8 +21,8 @@ setup(
     zip_safe=True,
     maintainer='root',
     maintainer_email='max.ehrhardt@hotmail.de',
-    description='TODO: Package description',
-    license='TODO: License declaration',
+    description='Statemachine managing the activation of different locomotion modes.',
+    license='GPLv3',
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
